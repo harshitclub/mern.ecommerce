@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 
 const addressSchema = new mongoose.Schema(
   {
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
     fullName: {
       type: String,
     },

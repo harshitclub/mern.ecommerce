@@ -1,6 +1,19 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
-const reviewSchema = new mongoose.Schema({});
+const reviewSchema = new Schema({
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+  },
+  rating: {
+    type: String,
+    enum: [1, 2, 3, 4, 5],
+  },
+  comment: {
+    type: String,
+    required: true,
+  },
+});
 
 const Review = mongoose.model("Review", reviewSchema);
 

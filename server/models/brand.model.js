@@ -1,6 +1,6 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
-const brandSchema = new mongoose.Schema({});
+const brandSchema = new Schema({});
 
 const Brand = mongoose.model("Brand", brandSchema);
 

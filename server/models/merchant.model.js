@@ -1,12 +1,8 @@
 import mongoose, { Schema } from "mongoose";
 
-const userSchema = Schema(
+const merchantSchema = new Schema(
   {
-    firstName: {
-      type: String,
-      required: true,
-    },
-    lastName: {
+    fullName: {
       type: String,
       required: true,
     },
@@ -21,7 +17,12 @@ const userSchema = Schema(
       unique: true,
       required: true,
     },
-    address: [
+    gstin: {
+      type: String,
+      unique: true,
+      required: true,
+    },
+    businessAddress: [
       {
         type: Schema.Types.ObjectId,
         ref: "Address",
@@ -34,13 +35,7 @@ const userSchema = Schema(
     profileImage: {
       type: String,
     },
-    cartItems: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Product",
-      },
-    ],
-    wishlistItems: [
+    products: [
       {
         type: Schema.Types.ObjectId,
         ref: "Product",
@@ -48,9 +43,9 @@ const userSchema = Schema(
     ],
     role: {
       type: String,
-      default: "User",
+      default: "Merchant",
     },
-    isVerified: {
+    adminApproval: {
       type: Boolean,
       default: false,
     },
@@ -64,6 +59,6 @@ const userSchema = Schema(
   }
 );
 
-const User = mongoose.model("User", userSchema);
+const Merchant = mongoose.model("Merchant", merchantSchema);
 
-export default User;
+export default Merchant;
