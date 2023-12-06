@@ -4,23 +4,37 @@ const merchantSchema = new Schema(
   {
     fullName: {
       type: String,
-      required: true,
+      required: [true, "Your Name is required."],
     },
     email: {
       type: String,
       unique: true,
-      required: true,
+      required: [true, "Email is required."],
       trim: true,
     },
     phone: {
       type: Number,
       unique: true,
-      required: true,
+      required: [true, "Phone Number is required."],
     },
     gstin: {
       type: String,
       unique: true,
       required: true,
+    },
+    pan: {
+      type: String,
+      unique: true,
+      required: [true, "PAN Number is required."],
+    },
+    storeName: {
+      type: String,
+      unique: true,
+      required: [true, "Provide Store Name."],
+    },
+    storeDescription: {
+      type: String,
+      required: [true, "Provide Store Description."],
     },
     businessAddress: [
       {
@@ -30,7 +44,8 @@ const merchantSchema = new Schema(
     ],
     password: {
       type: String,
-      required: true,
+      required: [true, "Password is required."],
+      min: [6, "Password must be at least 6 characters long."],
     },
     profileImage: {
       type: String,

@@ -4,22 +4,30 @@ const addressSchema = new mongoose.Schema(
   {
     user: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: function () {
+        return this.addressType === "Business" ? "Merchant" : "User";
+      },
+      required: true,
     },
     fullName: {
       type: String,
+      required: [true, "Name is required."],
     },
     country: {
       type: String,
+      required: true,
     },
     state: {
       type: String,
+      required: true,
     },
     city: {
       type: String,
+      required: true,
     },
     streetOne: {
       type: String,
+      required: true,
     },
     streetTwo: {
       type: String,
@@ -30,12 +38,15 @@ const addressSchema = new mongoose.Schema(
     addressType: {
       type: String,
       enum: ["House", "Apartment", "Business"],
+      required: true,
     },
     contactNumber: {
       type: String,
+      required: true,
     },
     pincode: {
       type: String,
+      required: true,
     },
   },
   {

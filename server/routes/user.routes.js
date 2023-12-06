@@ -1,14 +1,9 @@
 import express from "express";
+import { userLogin, userRegister } from "../controllers/user.controllers.js";
 
 const userRouter = express.Router();
 
-userRouter.post("/register");
-userRouter.post("/login");
-userRouter.post("/profile");
-userRouter.get("/logout");
-userRouter.put("/profile-update");
-userRouter.put("/password-update");
-userRouter.put("/picture-update");
-userRouter.post("/password-reset");
+userRouter.post("/register", userRegister);
+userRouter.post("/login", userLogin);
 
 export default userRouter;
