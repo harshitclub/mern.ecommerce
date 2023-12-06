@@ -1,9 +1,30 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
-import User from "../models/user.model.js";
+import Merchant from "../models/merchant.model.js";
 
-export const userRegister = asyncHandler(async (req, res) => {
-  const { firstName, lastName, email, phone, password } = req.body;
-  if (!firstName && !lastName && !email && !phone && !password) {
+export const merchantRegister = asyncHandler(async (req, res) => {
+  const {
+    fullName,
+    email,
+    phone,
+    gstin,
+    pan,
+    storeName,
+    storeDescription,
+    businessAddress,
+    password,
+  } = req.body;
+
+  if (
+    !fullName &&
+    !email &&
+    !phone &&
+    !gstin &&
+    !pan &&
+    !storeName &&
+    !storeDescription &&
+    !businessAddress &&
+    !password
+  ) {
     return res.status(500).send({
       success: false,
       message: "All Fields are required!",
@@ -11,50 +32,52 @@ export const userRegister = asyncHandler(async (req, res) => {
   }
 
   try {
-    const existingUser = await User.findOne({ email: email });
+    const existingMerchant = await Merchant.findOne({ email: email });
 
-    if (existingUser) {
+    if (existingMerchant) {
       return res.status(500).send({
         success: false,
-        message: "User already registered | login instead",
+        message: "Merchant already registered | login instead",
       });
     }
 
-    const newUser = await User.create({
-      firstName,
-      lastName,
+    const newMerchant = await Merchant.create({
+      fullName,
       email,
       phone,
+      gstin,
+      pan,
+      storeName,
+      storeDescription,
+      businessAddress,
       password,
     });
 
-    const createdUser = await User.findById(newUser._id).select(
+    const createdMerchant = await Merchant.findById(newMerchant._id).select(
       "-password -refreshToken"
     );
-
-    if (!createdUser) {
+    if (!createdMerchant) {
       return res.status(500).send({
         success: false,
-        message: "Somthing went wrong while registering the user",
+        message: "Somthing went wrong while registering the merchant",
       });
     }
-
     return res.status(201).json({
       success: true,
-      message: "User Registered",
-      createdUser,
+      message: "Merchant Registered | Waiting for admin approval",
+      createdMerchant,
     });
   } catch (error) {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Error In User Register API",
+      message: "Error In Merchant Register API",
       error,
     });
   }
 });
 
-export const userLogin = asyncHandler(async (req, res) => {
+export const merchantLogin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   if (!email && !password) {
@@ -65,16 +88,16 @@ export const userLogin = asyncHandler(async (req, res) => {
   }
 
   try {
-    const checkUser = await User.findOne({ email: email });
+    const checkMerchant = await Merchant.findOne({ email: email });
 
-    if (!checkUser) {
+    if (!checkMerchant) {
       return res.status(500).send({
         success: false,
-        message: "User not registered",
+        message: "Merchant not registered",
       });
     }
 
-    const checkPassword = await checkUser.isPasswordCorrect(password);
+    const checkPassword = await checkMerchant.isPasswordCorrect(password);
 
     if (!checkPassword) {
       return res.status(500).send({
@@ -83,11 +106,11 @@ export const userLogin = asyncHandler(async (req, res) => {
       });
     }
 
-    const user = await User.findById(checkUser._id).select(
+    const merchant = await Merchant.findById(checkMerchant._id).select(
       "-password -refreshToken"
     );
 
-    if (!user) {
+    if (!merchant) {
       return res.status(500).send({
         success: false,
         message: "Somthing Wrong While Login",
@@ -110,7 +133,7 @@ export const userLogin = asyncHandler(async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Login Success!",
-      user,
+      merchant,
     });
   } catch (error) {
     console.log(error);

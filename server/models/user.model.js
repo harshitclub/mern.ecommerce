@@ -17,6 +17,7 @@ const userSchema = Schema(
       unique: true,
       required: [true, "Email is required."],
       trim: true,
+      lowercase: true,
     },
     phone: {
       type: Number,

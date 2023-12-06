@@ -1,4 +1,6 @@
 import mongoose, { Schema } from "mongoose";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 const merchantSchema = new Schema(
   {
@@ -11,6 +13,7 @@ const merchantSchema = new Schema(
       unique: true,
       required: [true, "Email is required."],
       trim: true,
+      lowercase: true,
     },
     phone: {
       type: Number,
@@ -68,11 +71,58 @@ const merchantSchema = new Schema(
       type: Boolean,
       default: true,
     },
+    refreshToken: {
+      type: String,
+    },
   },
   {
     timestamps: true,
   }
 );
+
+merchantSchema.pre("save", async function (next) {
+  if (!this.isModified) return next();
+
+  this.password = await bcrypt.hash(this.password, 10);
+});
+
+merchantSchema.methods.isPasswordCorrect = async function (password) {
+  return await bcrypt.compare(password, this.password);
+};
+
+merchantSchema.methods.generateAccessToken = async function () {
+  return jwt.sign(
+    {
+      _id: this._id,
+      email: this.email,
+      fullName: this.firstName + " " + this.lastName,
+      role: this.role,
+      isVerified: this.isVerified,
+      isActive: this.isActive,
+    },
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
+    }
+  );
+};
+
+merchantSchema.methods.generateRefreshToken = async function () {
+  return jwt.sign(
+    {
+      _id: this._id,
+      email: this.email,
+      fullName: this.firstName + " " + this.lastName,
+      role: this.role,
+      isVerified: this.isVerified,
+      isActive: this.isActive,
+    },
+    process.env.REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
+    }
+  );
+};
 
 const Merchant = mongoose.model("Merchant", merchantSchema);
 
