@@ -94,8 +94,8 @@ export const userLogin = asyncHandler(async (req, res) => {
       });
     }
 
-    // const accessToken = await user.generateAccessToken();
-    // const refreshToken = await user.generateRefreshToken();
+    const accessToken = await user.generateAccessToken();
+    const refreshToken = await user.generateRefreshToken();
 
     // const verifyAccessToken = jwt.verify(
     //   accessToken,
@@ -106,6 +106,11 @@ export const userLogin = asyncHandler(async (req, res) => {
     //   refreshToken,
     //   process.env.REFRESH_TOKEN_SECRET
     // );
+
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    res.cookie("ecomToken", accessToken);
 
     return res.status(200).json({
       success: true,
@@ -120,4 +125,8 @@ export const userLogin = asyncHandler(async (req, res) => {
       error,
     });
   }
+});
+
+export const userUpdateProfile = asyncHandler(async (req, res) => {
+  const { firstName, lastName } = req.body;
 });
