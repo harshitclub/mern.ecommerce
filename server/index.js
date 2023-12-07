@@ -5,6 +5,8 @@ import cors from "cors";
 import connectDB from "./db/index.js";
 import userRouter from "./routes/user.routes.js";
 import merchantRouter from "./routes/merchant.routes.js";
+import productRouter from "./routes/product.routes.js";
+import categoryRouter from "./routes/category.routes.js";
 
 dotenv.config();
 
@@ -18,6 +20,11 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/merchant", merchantRouter);
+app.use("/api/v1/product", productRouter);
+app.use("/api/v1/category", categoryRouter);
+// app.use("/api/v1/brand");
+// app.use("/api/v1/review");
+// app.use("/api/v1/address");
 
 connectDB().then(() => {
   app.listen(PORT, () => {

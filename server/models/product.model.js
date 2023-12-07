@@ -4,42 +4,42 @@ const productSchema = new Schema(
   {
     name: {
       type: String,
-      required: true,
     },
     description: {
       type: String,
-      required: true,
     },
     slug: {
       type: String,
-      required: true,
       unique: true,
     },
     images: [
       {
         type: String,
-        required: true,
       },
     ],
     pricing: {
       currency: {
         type: String,
         enum: ["INR", "USD"],
-        required: true,
       },
       price: Number,
       salePrice: Number,
-      required: true,
     },
     stock: {
       type: String,
       enum: ["In Stock", "Out of Stock"],
-      required: true,
     },
     totalUnits: {
       type: Number,
-      required: true,
     },
+    options: [
+      {
+        H: String,
+        L: String,
+        W: String,
+        color: String,
+      },
+    ],
     category: [
       {
         type: Schema.Types.ObjectId,
@@ -56,7 +56,6 @@ const productSchema = new Schema(
     brand: {
       type: Schema.Types.ObjectId,
       ref: "Brand",
-      required: true,
     },
     merchant: {
       type: Schema.Types.ObjectId,
