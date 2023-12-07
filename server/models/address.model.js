@@ -1,6 +1,6 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
-const addressSchema = new mongoose.Schema(
+const addressSchema = new Schema(
   {
     user: {
       type: Schema.Types.ObjectId,
@@ -31,9 +31,11 @@ const addressSchema = new mongoose.Schema(
     },
     streetTwo: {
       type: String,
+      default: "",
     },
     landmark: {
       type: String,
+      default: "",
     },
     addressType: {
       type: String,
@@ -41,7 +43,7 @@ const addressSchema = new mongoose.Schema(
       required: true,
     },
     contactNumber: {
-      type: String,
+      type: Number,
       required: true,
     },
     pincode: {

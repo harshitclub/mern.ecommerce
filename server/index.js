@@ -7,6 +7,7 @@ import userRouter from "./routes/user.routes.js";
 import merchantRouter from "./routes/merchant.routes.js";
 import productRouter from "./routes/product.routes.js";
 import categoryRouter from "./routes/category.routes.js";
+import addressRouter from "./routes/address.routes.js";
 
 dotenv.config();
 
@@ -24,7 +25,7 @@ app.use("/api/v1/product", productRouter);
 app.use("/api/v1/category", categoryRouter);
 // app.use("/api/v1/brand");
 // app.use("/api/v1/review");
-// app.use("/api/v1/address");
+app.use("/api/v1/address", addressRouter);
 
 connectDB().then(() => {
   app.listen(PORT, () => {
