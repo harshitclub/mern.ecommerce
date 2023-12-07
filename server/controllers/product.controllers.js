@@ -3,6 +3,8 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import Category from "../models/category.model.js";
 import Merchant from "../models/merchant.model.js";
 import mongoose from "mongoose";
+import { verifyJwtToken } from "../utils/verifyJwtToken.js";
+import validateMongoId from "../utils/validateMongoId.js";
 
 export const addProduct = asyncHandler(async (req, res) => {
   const {
@@ -15,7 +17,11 @@ export const addProduct = asyncHandler(async (req, res) => {
     options: [{ H, L, W, color }],
     category,
   } = req.body;
-  const merchantId = "65705c8141754858ac69267d";
+
+  const merchantToken = req.cookies.ecomToken;
+  const verifyMerchantId = verifyJwtToken(merchantToken);
+  const merchantId = verifyMerchantId._id;
+  validateMongoId(merchantId);
   const findMerchant = await Merchant.findById(merchantId);
   const findCategory = await Category.findById(category);
 
@@ -29,7 +35,7 @@ export const addProduct = asyncHandler(async (req, res) => {
       totalUnits,
       options: [{ H, L, W, color }],
       category,
-      merchant: merchantId,
+      merchant: findMerchant._id,
     });
 
     const session = await mongoose.startSession();
