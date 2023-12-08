@@ -3,55 +3,44 @@ import User from "../models/user.model.js";
 
 export const userRegister = asyncHandler(async (req, res) => {
   const { firstName, lastName, email, phone, password } = req.body;
-  if (!firstName && !lastName && !email && !phone && !password) {
-    return res.status(500).send({
+
+  // Validate required fields
+  if (!firstName || !lastName || !email || !phone || !password) {
+    return res.status(400).send({
       success: false,
-      message: "All Fields are required!",
+      message: "All fields are required.",
     });
   }
 
-  try {
-    const existingUser = await User.findOne({ email: email });
-
-    if (existingUser) {
-      return res.status(500).send({
-        success: false,
-        message: "User already registered | login instead",
-      });
-    }
-
-    const newUser = await User.create({
-      firstName,
-      lastName,
-      email,
-      phone,
-      password,
-    });
-
-    const createdUser = await User.findById(newUser._id).select(
-      "-password -refreshToken"
-    );
-
-    if (!createdUser) {
-      return res.status(500).send({
-        success: false,
-        message: "Somthing went wrong while registering the user",
-      });
-    }
-
-    return res.status(201).json({
-      success: true,
-      message: "User Registered",
-      createdUser,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({
+  // Check for existing user
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return res.status(409).send({
       success: false,
-      message: "Error In User Register API",
-      error,
+      message: "User already registered. Please login.",
     });
   }
+
+  // Create new user
+  const newUser = await User.create({
+    firstName,
+    lastName,
+    email,
+    phone,
+    password,
+  });
+
+  // Select specific fields excluding sensitive data
+  const createdUser = await User.findById(newUser._id).select(
+    "-password -refreshToken"
+  );
+
+  // Respond with success message and user data
+  res.status(201).json({
+    success: true,
+    message: "User registered successfully.",
+    data: createdUser,
+  });
 });
 
 export const userLogin = asyncHandler(async (req, res) => {
@@ -96,16 +85,6 @@ export const userLogin = asyncHandler(async (req, res) => {
 
     const accessToken = await user.generateAccessToken();
     const refreshToken = await user.generateRefreshToken();
-
-    // const verifyAccessToken = jwt.verify(
-    //   accessToken,
-    //   process.env.ACCESS_TOKEN_SECRET
-    // );
-
-    // const verifyRefreshToken = jwt.verify(
-    //   refreshToken,
-    //   process.env.REFRESH_TOKEN_SECRET
-    // );
 
     user.refreshToken = refreshToken;
     await user.save();

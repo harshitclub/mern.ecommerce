@@ -20,11 +20,18 @@ const userSchema = Schema(
       required: [true, "Email is required."],
       trim: true,
       lowercase: true,
+      match: [/^\S+@\S+\.\S+$/, "Invalid email format."],
     },
     phone: {
       type: Number,
       unique: true,
       required: [true, "Phone Number is required."],
+      validate: {
+        validator: function (value) {
+          return /^\d{10}$/.test(value);
+        },
+        message: "Invalid phone number format. Please enter a 10-digit number.",
+      },
     },
     address: [
       {
@@ -35,7 +42,8 @@ const userSchema = Schema(
     password: {
       type: String,
       required: [true, "Password is required."],
-      min: [6, "Password must be at least 6 characters long."],
+      minlength: 6,
+      message: "Password must be at least 6 characters long.",
     },
     profileImage: {
       type: String,
@@ -82,7 +90,7 @@ const userSchema = Schema(
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 
-  this.password = await bcrypt.hash(this.password, 10);
+  this.password = bcrypt.hash(this.password, 10);
   next();
 });
 

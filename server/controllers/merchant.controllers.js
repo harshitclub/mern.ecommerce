@@ -25,56 +25,46 @@ export const merchantRegister = asyncHandler(async (req, res) => {
     !businessAddress &&
     !password
   ) {
-    return res.status(500).send({
+    return res.status(400).send({
       success: false,
-      message: "All Fields are required!",
+      message: "All fields are required.",
     });
   }
 
-  try {
-    const existingMerchant = await Merchant.findOne({ email: email });
+  // Check for existing merchant
+  const existingMerchant = await Merchant.findOne({ email: email });
 
-    if (existingMerchant) {
-      return res.status(500).send({
-        success: false,
-        message: "Merchant already registered | login instead",
-      });
-    }
-
-    const newMerchant = await Merchant.create({
-      fullName,
-      email,
-      phone,
-      gstin,
-      pan,
-      storeName,
-      storeDescription,
-      businessAddress,
-      password,
-    });
-
-    const createdMerchant = await Merchant.findById(newMerchant._id).select(
-      "-password -refreshToken"
-    );
-    if (!createdMerchant) {
-      return res.status(500).send({
-        success: false,
-        message: "Somthing went wrong while registering the merchant",
-      });
-    }
-    return res.status(201).json({
-      success: true,
-      message: "Merchant Registered | Waiting for admin approval",
-      createdMerchant,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({
+  if (existingMerchant) {
+    return res.status(409).send({
       success: false,
-      message: "Error In Merchant Register API",
-      error,
+      message: "Merchant already registered. Please login.",
     });
   }
+
+  // Create new mechant
+  const newMerchant = await Merchant.create({
+    fullName,
+    email,
+    phone,
+    gstin,
+    pan,
+    storeName,
+    storeDescription,
+    businessAddress,
+    password,
+  });
+
+  // Select specific fields excluding sensitive data
+  const createdMerchant = await Merchant.findById(newMerchant._id).select(
+    "-password -refreshToken"
+  );
+
+  // Respond with success message and user data
+  res.status(201).json({
+    success: true,
+    message: "Merchant registered successfully.",
+    data: createdMerchant,
+  });
 });
 
 export const merchantLogin = asyncHandler(async (req, res) => {

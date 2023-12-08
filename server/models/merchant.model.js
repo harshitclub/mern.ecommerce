@@ -14,11 +14,18 @@ const merchantSchema = new Schema(
       required: [true, "Email is required."],
       trim: true,
       lowercase: true,
+      match: [/^\S+@\S+\.\S+$/, "Invalid email format."],
     },
     phone: {
       type: Number,
       unique: true,
       required: [true, "Phone Number is required."],
+      validate: {
+        validator: function (value) {
+          return /^\d{10}$/.test(value);
+        },
+        message: "Invalid phone number format. Please enter a 10-digit number.",
+      },
     },
     gstin: {
       type: String,
@@ -48,7 +55,8 @@ const merchantSchema = new Schema(
     password: {
       type: String,
       required: [true, "Password is required."],
-      min: [6, "Password must be at least 6 characters long."],
+      minlength: 6,
+      message: "Password must be at least 6 characters long.",
     },
     profileImage: {
       type: String,
