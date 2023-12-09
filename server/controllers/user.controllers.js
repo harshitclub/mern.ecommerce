@@ -45,56 +45,52 @@ export const userRegister = asyncHandler(async (req, res) => {
 
 export const userLogin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-
-  if (!email && !password) {
-    return res.status(500).send({
-      success: false,
-      message: "Please provide email & password",
-    });
-  }
-
   try {
-    const checkUser = await User.findOne({ email: email });
-
-    if (!checkUser) {
-      return res.status(500).send({
+    // Validate request body
+    if (!email || !password) {
+      return res.status(400).send({
         success: false,
-        message: "User not registered",
+        message: "Please provide email and password",
       });
     }
 
-    const checkPassword = await checkUser.isPasswordCorrect(password);
-
-    if (!checkPassword) {
-      return res.status(500).send({
-        success: false,
-        message: "Invalid Credentials!",
-      });
-    }
-
-    const user = await User.findById(checkUser._id).select(
-      "-password -refreshToken"
-    );
+    // Find user by email
+    const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(500).send({
+      return res.status(401).send({
         success: false,
-        message: "Somthing Wrong While Login",
+        message: "Invalid credentials",
       });
     }
 
+    // Validate password
+    const isPasswordValid = await user.isPasswordCorrect(password);
+
+    if (!isPasswordValid) {
+      return res.status(401).send({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    // Generate tokens
     const accessToken = await user.generateAccessToken();
     const refreshToken = await user.generateRefreshToken();
 
+    // Update user with refresh token
     user.refreshToken = refreshToken;
     await user.save();
 
-    res.cookie("ecomToken", accessToken);
+    // Set cookies for access and refresh tokens
+    res.cookie("ecomAccess", accessToken);
+    res.cookie("ecomRefresh", refreshToken);
 
+    // Send successful login response
     return res.status(200).json({
       success: true,
-      message: "Login Success!",
-      user,
+      message: "Login successful",
+      user: user,
     });
   } catch (error) {
     console.log(error);

@@ -10,8 +10,9 @@ const userRouter = express.Router();
 
 userRouter.post("/register", userRegister);
 userRouter.post("/login", userLogin);
-userRouter.patch("/", auth, () => {
+userRouter.patch("/", auth, (req, res) => {
   console.log("done");
+  res.status(200).json({ message: "Harshit is best!" });
 });
 
 export default userRouter;
