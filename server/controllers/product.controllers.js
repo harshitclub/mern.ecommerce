@@ -18,7 +18,7 @@ export const addProduct = asyncHandler(async (req, res) => {
     category,
   } = req.body;
 
-  const merchantToken = req.cookies.ecomToken;
+  const merchantToken = req.cookies.ecomAccess;
   const verifyMerchantId = verifyJwtToken(merchantToken);
   const merchantId = verifyMerchantId._id;
   validateMongoId(merchantId);

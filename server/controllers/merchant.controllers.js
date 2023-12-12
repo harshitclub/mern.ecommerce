@@ -107,8 +107,12 @@ export const merchantLogin = asyncHandler(async (req, res) => {
       });
     }
 
-    // const accessToken = await user.generateAccessToken();
-    // const refreshToken = await user.generateRefreshToken();
+    const accessToken = await merchant.generateAccessToken();
+    const refreshToken = await merchant.generateRefreshToken();
+
+    // Set cookies for access and refresh tokens
+    res.cookie("ecomAccess", accessToken);
+    res.cookie("ecomRefresh", refreshToken);
 
     // const verifyAccessToken = jwt.verify(
     //   accessToken,
@@ -129,7 +133,7 @@ export const merchantLogin = asyncHandler(async (req, res) => {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Error In User Login API",
+      message: "Error In Merchant Login API",
       error,
     });
   }

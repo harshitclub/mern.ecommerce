@@ -89,7 +89,7 @@ const merchantSchema = new Schema(
 );
 
 merchantSchema.pre("save", async function (next) {
-  if (!this.isModified) return next();
+  if (!this.isModified("password")) return next();
 
   this.password = await bcrypt.hash(this.password, 10);
 });
