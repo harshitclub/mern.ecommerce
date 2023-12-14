@@ -50,7 +50,7 @@ export const userLogin = asyncHandler(async (req, res) => {
     if (!email || !password) {
       return res.status(400).send({
         success: false,
-        message: "Please provide email and password",
+        message: "Missing required fields: email and password",
       });
     }
 
@@ -58,9 +58,9 @@ export const userLogin = asyncHandler(async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(401).send({
+      return res.status(404).send({
         success: false,
-        message: "Invalid credentials",
+        message: "User not found with this email address",
       });
     }
 
@@ -82,23 +82,47 @@ export const userLogin = asyncHandler(async (req, res) => {
     user.refreshToken = refreshToken;
     await user.save();
 
-    // Set cookies for access and refresh tokens
-    res.cookie("ecomAccess", accessToken);
-    res.cookie("ecomRefresh", refreshToken);
+    const options = {
+      httpOnly: true,
+      secure: true,
+    };
+
+    const loggedInUser = await User.findById(user._id).select(
+      "-password -refreshToken"
+    );
 
     // Send successful login response
-    return res.status(200).json({
-      success: true,
-      message: "Login successful",
-      user: user,
-    });
+    return res
+      .status(200)
+      .cookie(`ecomAccess`, accessToken, options)
+      .cookie(`ecomRefresh`, refreshToken, options)
+      .json({
+        success: true,
+        message: "Login successful",
+        user: loggedInUser,
+      });
   } catch (error) {
-    console.log(error);
-    res.status(500).send({
-      success: false,
-      message: "Error In User Login API",
-      error,
-    });
+    console.error(error);
+
+    if (error.name === "ValidationError") {
+      return res.status(400).send({
+        success: false,
+        message: "Validation error",
+        error: error.errors,
+      });
+    } else if (error.name === "MongoError" && error.code === 11000) {
+      // Handle duplicate email error (if applicable)
+      return res.status(409).send({
+        success: false,
+        message: "Email address already exists",
+      });
+    } else {
+      return res.status(500).send({
+        success: false,
+        message: "Internal server error",
+        error,
+      });
+    }
   }
 });
 

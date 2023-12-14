@@ -102,8 +102,6 @@ merchantSchema.methods.generateAccessToken = async function () {
   return jwt.sign(
     {
       _id: this._id,
-      email: this.email,
-      fullName: this.firstName + " " + this.lastName,
       role: this.role,
       isVerified: this.isVerified,
       isActive: this.isActive,
@@ -119,8 +117,6 @@ merchantSchema.methods.generateRefreshToken = async function () {
   return jwt.sign(
     {
       _id: this._id,
-      email: this.email,
-      fullName: this.firstName + " " + this.lastName,
       role: this.role,
       isVerified: this.isVerified,
       isActive: this.isActive,

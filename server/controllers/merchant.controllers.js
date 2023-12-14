@@ -70,71 +70,78 @@ export const merchantRegister = asyncHandler(async (req, res) => {
 export const merchantLogin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  if (!email && !password) {
-    return res.status(500).send({
+  if (!email || !password) {
+    return res.status(400).send({
       success: false,
-      message: "Please provide email & password",
+      message: "Missing required fields: email and password",
     });
   }
 
   try {
-    const checkMerchant = await Merchant.findOne({ email: email });
-
-    if (!checkMerchant) {
-      return res.status(500).send({
-        success: false,
-        message: "Merchant not registered",
-      });
-    }
-
-    const checkPassword = await checkMerchant.isPasswordCorrect(password);
-
-    if (!checkPassword) {
-      return res.status(500).send({
-        success: false,
-        message: "Invalid Credentials!",
-      });
-    }
-
-    const merchant = await Merchant.findById(checkMerchant._id).select(
-      "-password -refreshToken"
-    );
+    const merchant = await Merchant.findOne({ email }).select("+password");
 
     if (!merchant) {
-      return res.status(500).send({
+      return res.status(401).send({
         success: false,
-        message: "Somthing Wrong While Login",
+        message: "Invalid email address or merchant not registered",
+      });
+    }
+
+    const isPasswordCorrect = await merchant.isPasswordCorrect(password);
+
+    if (!isPasswordCorrect) {
+      return res.status(401).send({
+        success: false,
+        message: "Invalid Credentials",
       });
     }
 
     const accessToken = await merchant.generateAccessToken();
     const refreshToken = await merchant.generateRefreshToken();
 
-    // Set cookies for access and refresh tokens
-    res.cookie("ecomAccess", accessToken);
-    res.cookie("ecomRefresh", refreshToken);
+    merchant.refreshToken = refreshToken;
+    await merchant.save();
 
-    // const verifyAccessToken = jwt.verify(
-    //   accessToken,
-    //   process.env.ACCESS_TOKEN_SECRET
-    // );
+    const options = {
+      httpOnly: true,
+      secure: true,
+    };
 
-    // const verifyRefreshToken = jwt.verify(
-    //   refreshToken,
-    //   process.env.REFRESH_TOKEN_SECRET
-    // );
+    const loggedInMerchant = await Merchant.findById(merchant._id).select(
+      "-password -refreshToken"
+    );
 
-    return res.status(200).json({
-      success: true,
-      message: "Login Success!",
-      merchant,
-    });
+    // Send successful login response
+    return res
+      .status(200)
+      .cookie(`ecomAccess`, accessToken, options)
+      .cookie(`ecomRefresh`, refreshToken, options)
+      .json({
+        success: true,
+        message: "Login successful",
+        user: loggedInMerchant,
+      });
   } catch (error) {
-    console.log(error);
-    res.status(500).send({
-      success: false,
-      message: "Error In Merchant Login API",
-      error,
-    });
+    console.error(error);
+
+    if (error.name === "ValidationError") {
+      return res.status(400).send({
+        success: false,
+        message: "Validation error",
+        error: error.errors,
+      });
+    } else if (error.name === "MongoError" && error.code === 11000) {
+      // Handle duplicate email error (if applicable)
+      return res.status(409).send({
+        success: false,
+        message: "Email address already exists",
+      });
+    } else {
+      return res.status(500).send({
+        success: false,
+        message: "Internal server error",
+        error,
+      });
+    }
   }
 });
